@@ -1,54 +1,83 @@
 import React, { Component } from 'react';
 import {
-    StyleSheet,
+    FlatList,
     Text,
     View,
 } from 'react-native';
 import DataService from '../services/DataService';
-import tabNavigator from '../navigation/MainTabNavigator';
+import { ListItem, SearchBar } from 'react-native-elements';
 
 export default class HomeScreen extends Component {
 
     dataService = new DataService();
     state = {
         planets: null,
-        favoritePeople: []
     };
+    arrayholder = [];
 
     componentDidMount() {
         this.dataService.getAllPlanets()
-            .then((res) => this.setState({
-                planets: res.results
-            }));
+            .then((res) => {
+                this.setState({
+                    planets: res.results
+                });
+                this.arrayholder = res.results;
+            });
     }
 
-    renderItem = (arr) => {
+    searchFilterFunction = text => {
+        this.setState({
+            value: text,
+        });
 
-        return arr.map((planet, index) => {
-            return (
-                <Text
-                    key={index}
-                    styles={styles.planetList}
-                >
-                    {planet.name}{'\n'}
-                </Text>
-            )
-        })
+        const newData = this.arrayholder.filter(item => {
+            const itemData = `${item.name.toUpperCase()}`;
+            const textData = text.toUpperCase();
+
+            return itemData.indexOf(textData) > -1;
+        });
+        this.setState({
+            planets: newData,
+        });
+    };
+
+    renderHeader = () => {
+        return (
+            <SearchBar
+                placeholder="Type Here..."
+                lightTheme
+                round
+                onChangeText={text => this.searchFilterFunction(text)}
+                autoCorrect={false}
+                value={this.state.value}
+            />
+        );
     };
 
     render() {
-        const { planets } = this.state;
-        if (!planets) {
+        const idRexExp = /\/([0-9]*)\/$/;
+        if (!this.state.planets) {
             return (
                 <Text>Loading...</Text>
             )
         }
 
-        const items = this.renderItem(planets);
-
         return (
             <View>
-                <Text styles={styles.planetList}>{items}</Text>
+                <FlatList
+                    data={this.state.planets}
+                    renderItem={({ item }) => (
+                        <ListItem
+                            leftAvatar={{
+                                source: {
+                                    uri: `https://starwars-visualguide.com/assets/img/planets/${item.url.match(idRexExp)[1]}.jpg`
+                                }
+                            }}
+                            title={item.name}
+                        />
+                    )}
+                    ListHeaderComponent={this.renderHeader}
+                />
             </View>
         );
     }
@@ -57,13 +86,3 @@ export default class HomeScreen extends Component {
 HomeScreen.navigationOptions = {
     header: null,
 };
-
-const styles = StyleSheet.create({
-    planetList: {
-        display: 'flex',
-        flexDirection: 'column',
-        padding: 20,
-        fontSize: 40,
-        backgroundColor: 'red'
-    },
-});

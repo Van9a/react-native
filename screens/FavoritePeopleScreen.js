@@ -1,25 +1,43 @@
-import React from 'react';
-import { ExpoConfigView } from '@expo/samples';
-import View from 'react-native-web/src/exports/View';
+import React, { Component } from 'react';
 import Text from 'react-native-web/src/exports/Text';
 import { ScrollView } from 'react-native-web';
+import { AsyncStorage } from 'react-native';
+import DataService from '../services/DataService';
 
-export default function FavoritePeopleScreen() {
-  /**
-   * Go ahead and delete ExpoConfigView and replace it with your content;
-   * we just wanted to give you a quick view of your config.
-   */
-  return(
-    <ScrollView>
-      <Text>Hello</Text>
-    </ScrollView>
-  )
+export default class FavoritePeopleScreen extends Component {
+    dataService = new DataService();
+
+    state = {
+        loading: true,
+        peoples: null
+    };
+
+    componentDidMount() {
+        AsyncStorage.getItem('peopleList').then((value) => {
+
+            this.setState({
+                loading: false,
+                peoples: value
+            })
+        });
+    }
+
+    render() {
+        if (this.state.loading) {
+            return (
+                <Text>Loading...</Text>
+            )
+        }
+
+        return (
+            <ScrollView>
+                <Text>Hello, {this.state.peoples}</Text>
+            </ScrollView>
+        )
+    }
 }
 
 FavoritePeopleScreen.navigationOptions = {
     header: null,
 };
 
-/*FavoritePeopleScreen.navigationOptions = {
-  title: 'app.json',
-};*/

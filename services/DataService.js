@@ -1,21 +1,25 @@
-import * as axios from 'axios';
-
 export default class DataService {
-    _apiBase = 'http://frontend-candidate.dev.sdh.com.ua/v1/';
+    _apiBase = 'http://swapi.co/api/';
 
-    async getAllContacts() {
-        return axios.get(`${this._apiBase}contact`).then(response => response.data); //await this.getResource(`/contact/`);
+    async getResource(url){
+        const res = await fetch(`${this._apiBase}${url}`);
+
+        if(!res.ok){
+            throw new Error(`Could not fetch ${url}, received ${res.status}`)
+        }
+        return await res.json();
     }
 
-    async addContact(data) {
-        return axios.post(`${this._apiBase}contact/`, data);
+    async getAllPeople() {
+        return this.getResource('people');
     }
 
-    async deleteContact(id) {
-        return axios.delete(`${this._apiBase}contact/${id}`);
+    async getPeople(id) {
+        return this.getResource(`people/${id}`);
     }
 
-    async changeContact(id, data) {
-        return axios.put(`${this._apiBase}contact/${id}`, data);
+    async getAllPlanets() {
+        return this.getResource('planets');
+
     }
 }

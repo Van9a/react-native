@@ -1,29 +1,33 @@
 import React, { Component } from 'react';
 import { View, Text } from 'react-native';
-import DataService from '../services/DataService';
 import { Button, Image } from 'react-native-web';
+import { AsyncStorage } from 'react-native';
 
 export default class PeopleDetailsScreen extends Component {
-    dataService = new DataService();
+
     state = {
         people: null,
-        image: null
+        image: null,
+        peopleId: null,
+
     };
 
-    componentDidMount() {
+    setStoreData = async () => {
         const { navigation } = this.props;
-        const id = navigation.getParam('id');
-
-        this.dataService.getPeople(id)
-            .then((people) => this.setState({
-                    people,
-                    image: `https://starwars-visualguide.com/assets/img/characters/${id}.jpg`
-                })
-            )
-    }
+        const people = navigation.getParam('people');
+        try {
+            await AsyncStorage.setItem('peopleList', people);
+        } catch (error) {
+            alert('Error')
+        }
+    };
 
     render() {
-        const { people, image } = this.state;
+        const { navigation } = this.props;
+        const id = navigation.getParam('id');
+        const people = navigation.getParam('people');
+        const image = navigation.getParam('image');
+
         if (!people) {
             return (
                 <Text>Loading...</Text>
@@ -34,16 +38,22 @@ export default class PeopleDetailsScreen extends Component {
 
         return (
             <View>
+                <Text>id: {id}</Text>
                 <Text>name: {name}</Text>
                 <Text>height: {height}</Text>
                 <Text>mass: {mass}</Text>
+                <Button name="Go back" onPress={() => this.props.navigation.push('Peoples')}
+                        title={'Go back'}/>
                 <Text>birth year: {birth_year}</Text>
                 <Text>gender: {gender}</Text>
                 <Image
                     style={{ width: 100, height: 100, borderRadius: 10 }}
                     source={{ uri: image }}
                 />
-                <Button name="Button add to favorite" onPress={() => console.log('press')} title={'Add to favorite'}/>
+                <Button name="Go back" onPress={() => this.props.navigation.push('Peoples')}
+                        title={'Go back'}/>
+                <Button name="Set to favorite" onPress={() => this.setStoreData()}
+                        title={'Set to favorite'}/>
             </View>
         );
     }
